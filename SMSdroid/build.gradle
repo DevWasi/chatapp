@@ -1,0 +1,79 @@
+buildscript {
+    repositories {
+        jcenter()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.2'
+    }
+}
+apply plugin: 'com.android.application'
+
+repositories {
+    maven {
+        url 'https://raw.githubusercontent.com/felixb/mvn-repo/master'
+    }
+    jcenter()
+    google()
+}
+
+android {
+    compileSdkVersion 29
+
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
+
+    defaultConfig {
+        minSdkVersion 29
+        targetSdkVersion 30
+        versionCode 141770000
+        versionName "1.7.7"
+    }
+
+    signingConfigs {
+        release {
+            File releaseProps = new File("release.properties")
+            if (releaseProps.exists()) {
+                Properties props = new Properties()
+                props.load(new FileInputStream(releaseProps))
+
+                storeFile file("../release.ks")
+                storePassword props.getProperty("releaseKeystorePassword")
+                keyAlias "jarsign"
+                keyPassword props.getProperty("releaseKeyPassword")
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            versionNameSuffix " debug"
+        }
+
+        logRelease {
+            versionNameSuffix "-logRelease"
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:support-v4:26.1.0'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.google.android.gms:play-services-ads:19.7.0'
+    implementation 'de.ub0r.android.lib:lib:1.1.1'
+    implementation 'de.ub0r.android.logg0r:logg0r:2.0.0'
+}
