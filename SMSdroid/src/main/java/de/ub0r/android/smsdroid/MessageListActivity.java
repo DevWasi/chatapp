@@ -19,25 +19,19 @@
 package de.ub0r.android.smsdroid;
 
 import android.annotation.TargetApi;
-import android.app.AlertDialog.Builder;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.CallLog.Calls;
 import android.text.ClipboardManager;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -63,156 +57,61 @@ import de.ub0r.android.lib.apis.Contact;
 import de.ub0r.android.lib.apis.ContactsWrapper;
 import de.ub0r.android.logg0r.Log;
 
-/**
- * {@link FragmentActivity} showing a single conversation.
- *
- * @author flx
- */
 public class MessageListActivity extends AppCompatActivity implements OnItemClickListener,
         OnItemLongClickListener, OnClickListener, OnLongClickListener {
 
     private static final String TAG = "ml";
 
-    /**
-     * {@link ContactsWrapper}.
-     */
     private static final ContactsWrapper WRAPPER = ContactsWrapper.getInstance();
 
-    /**
-     * Number of items.
-     */
     private static final int WHICH_N = 8;
 
-    /**
-     * Index in dialog: mark view/add contact.
-     */
-    private static final int WHICH_VIEW_CONTACT = 0;
-
-    /**
-     * Index in dialog: mark call contact.
-     */
-    private static final int WHICH_CALL = 1;
-
-    /**
-     * Index in dialog: mark read/unread.
-     */
     private static final int WHICH_MARK_UNREAD = 2;
 
-    /**
-     * Index in dialog: reply.
-     */
     private static final int WHICH_REPLY = 3;
 
-    /**
-     * Index in dialog: forward.
-     */
     private static final int WHICH_FORWARD = 4;
 
-    /**
-     * Index in dialog: copy text.
-     */
     private static final int WHICH_COPY_TEXT = 5;
 
-    /**
-     * Index in dialog: view details.
-     */
     private static final int WHICH_VIEW_DETAILS = 6;
 
-    /**
-     * Index in dialog: delete.
-     */
     private static final int WHICH_DELETE = 7;
 
-    /**
-     * maximum number of lines in EditText
-     */
     private static final int MAX_EDITTEXT_LINES = 10;
 
-    /**
-     * Package name for System's chooser.
-     */
     private static String chooserPackage = null;
 
-    /**
-     * Used {@link Uri}.
-     */
     private Uri uri;
 
-    /**
-     * {@link Conversation} shown.
-     */
     private Conversation conv = null;
 
-    /**
-     * ORIG_URI to resolve.
-     */
     static final String URI = "content://mms-sms/conversations/";
 
-    /**
-     * Dialog items shown if an item was long clicked.
-     */
     private final String[] longItemClickDialog = new String[WHICH_N];
 
-    /**
-     * Marked a message unread?
-     */
     private boolean markedUnread = false;
 
-    /**
-     * {@link EditText} holding text.
-     */
     private EditText etText;
-
-    /**
-     * {@link ClipboardManager}.
-     */
     @SuppressWarnings("deprecation")
     private ClipboardManager cbmgr;
 
-    /**
-     * Enable autosend.
-     */
     private boolean enableAutosend = true;
 
-    /**
-     * Show textfield.
-     */
     private boolean showTextField = true;
 
-    /**
-     * Show {@link Contact}'s photo.
-     */
     private boolean showPhoto = false;
 
-    /**
-     * Default {@link Drawable} for {@link Contact}s.
-     */
     private Drawable defaultContactAvatar = null;
 
-    /**
-     * {@link MenuItem} holding {@link Contact}'s picture.
-     */
     private MenuItem contactItem = null;
 
-    /**
-     * True, to update {@link Contact}'s photo.
-     */
     private boolean needContactUpdate = false;
 
-    /**
-     * Get {@link ListView}.
-     *
-     * @return {@link ListView}
-     */
     private ListView getListView() {
         return (ListView) findViewById(android.R.id.list);
     }
 
-    /**
-     * Set {@link ListAdapter} to {@link ListView}.
-     *
-     * @param la ListAdapter
-     */
     private void setListAdapter(final ListAdapter la) {
         getListView().setAdapter(la);
     }
@@ -287,11 +186,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         parseIntent(intent);
     }
 
-    /**
-     * Parse data pushed by {@link Intent}.
-     *
-     * @param intent {@link Intent}
-     */
     private void parseIntent(final Intent intent) {
         Log.d(TAG, "parseIntent(", intent, ")");
         if (intent == null) {
@@ -359,8 +253,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         if (showKeyboard) {
             etText.requestFocus();
         }
-
-        setRead();
     }
 
     private void updateHeader(final Contact contact) {
@@ -415,11 +307,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         return null;
     }
 
-    /**
-     * Show {@link MenuItem} holding {@link Contact}'s picture.
-     *
-     * @param contact {@link Contact}
-     */
     private void setContactIcon(final Contact contact) {
         if (contact == null) {
             Log.w(TAG, "setContactIcon(null)");
@@ -468,9 +355,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         needContactUpdate = false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected final void onResume() {
         super.onResume();
@@ -524,25 +408,12 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         }
     }
 
-    /**
-     * Set all messages in a given thread as read.
-     */
-    private void setRead() {
-        if (conv != null) {
-            ConversationListActivity.markRead(this, conv.getUri(), 1);
-        }
-    }
-
     @Override
     public final boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.messagelist, menu);
         contactItem = menu.findItem(R.id.item_contact);
         if (conv != null) {
             setContactIcon(conv.getContact());
-        }
-        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        if (p.getBoolean(PreferencesActivity.PREFS_HIDE_RESTORE, false)) {
-            menu.removeItem(R.id.item_restore);
         }
         return true;
     }
@@ -557,26 +428,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 return true;
-            case R.id.item_delete_thread:
-                ConversationListActivity.deleteMessages(this, uri, R.string.delete_thread_,
-                        R.string.delete_thread_question, this);
-                return true;
-            case R.id.item_answer:
-                send(true, false);
-                return true;
-            case R.id.item_call:
-                try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("tel:"
-                            + conv.getContact().getNumber())));
-                } catch (ActivityNotFoundException e) {
-                    Log.e(TAG, "unable to open dailer", e);
-                    Toast.makeText(this, R.string.error_unknown, Toast.LENGTH_LONG).show();
-                }
-                return true;
-            case R.id.item_restore:
-                etText.setText(PreferenceManager.getDefaultSharedPreferences(this).getString(
-                        PreferencesActivity.PREFS_BACKUPLASTTEXT, null));
-                return true;
             case R.id.item_contact:
                 if (conv != null && contactItem != null) {
                     WRAPPER.showQuickContactFallBack(this, contactItem.getActionView(), conv
@@ -588,166 +439,10 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public final void onItemClick(final AdapterView<?> parent, final View view, final int position,
-                                  final long id) {
+    public final void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
         onItemLongClick(parent, view, position, id);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public final boolean onItemLongClick(final AdapterView<?> parent, final View view,
-                                         final int position, final long id) {
-        final Context context = this;
-        final Message m = Message.getMessage(this, (Cursor) parent.getItemAtPosition(position));
-        final Uri target = m.getUri();
-        final int read = m.getRead();
-        final int type = m.getType();
-        Builder builder = new Builder(context);
-        builder.setTitle(R.string.message_options_);
-
-        final Contact contact = conv.getContact();
-        final String a = contact.getNumber();
-        Log.d(TAG, "p: ", a);
-        final String n = contact.getName();
-
-        String[] items = longItemClickDialog;
-        if (TextUtils.isEmpty(n)) {
-            items[WHICH_VIEW_CONTACT] = getString(R.string.add_contact_);
-        } else {
-            items[WHICH_VIEW_CONTACT] = getString(R.string.view_contact_);
-        }
-        items[WHICH_CALL] = getString(R.string.call) + " " + contact.getDisplayName();
-        if (read == 0) {
-            items = items.clone();
-            items[WHICH_MARK_UNREAD] = context.getString(R.string.mark_read_);
-        }
-        if (type == Message.SMS_DRAFT) {
-            items = items.clone();
-            items[WHICH_FORWARD] = context.getString(R.string.send_draft_);
-        }
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @SuppressWarnings("deprecation")
-            @Override
-            public void onClick(final DialogInterface dialog, final int which) {
-                Intent i;
-                switch (which) {
-                    case WHICH_VIEW_CONTACT:
-                        if (n == null) {
-                            i = ContactsWrapper.getInstance().getInsertPickIntent(a);
-                            Conversation.flushCache();
-                        } else {
-                            final Uri u = MessageListActivity.this.conv.getContact().getUri();
-                            i = new Intent(Intent.ACTION_VIEW, u);
-                        }
-                        try {
-                            MessageListActivity.this.startActivity(i);
-                        } catch (ActivityNotFoundException e) {
-                            Log.e(TAG, "unable to launch dailer: ", i.getAction(), e);
-                            Toast.makeText(MessageListActivity.this, R.string.error_unknown,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        break;
-                    case WHICH_CALL:
-                        MessageListActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
-                                .parse("tel:" + a)));
-                        break;
-                    case WHICH_MARK_UNREAD:
-                        ConversationListActivity.markRead(context, target, 1 - read);
-                        MessageListActivity.this.markedUnread = true;
-                        break;
-                    case WHICH_REPLY:
-                        MessageListActivity.this.startActivity(ConversationListActivity
-                                .getComposeIntent(MessageListActivity.this, a, false));
-                        break;
-                    case WHICH_FORWARD:
-                        int resId;
-                        if (type == Message.SMS_DRAFT) {
-                            resId = R.string.send_draft_;
-                            i = ConversationListActivity.getComposeIntent(MessageListActivity.this,
-                                    MessageListActivity.this.conv.getContact().getNumber(), false);
-                        } else {
-                            resId = R.string.forward_;
-                            i = new Intent(Intent.ACTION_SEND);
-                            i.setType("text/plain");
-                            i.putExtra("forwarded_message", true);
-                        }
-                        CharSequence text;
-                        if (PreferencesActivity.decodeDecimalNCR(context)) {
-                            text = Converter.convertDecNCR2Char(m.getBody());
-                        } else {
-                            text = m.getBody();
-                        }
-                        i.putExtra(Intent.EXTRA_TEXT, text);
-                        i.putExtra("sms_body", text);
-                        context.startActivity(Intent.createChooser(i, context.getString(resId)));
-                        break;
-                    case WHICH_COPY_TEXT:
-                        final ClipboardManager cm = (ClipboardManager) context
-                                .getSystemService(Context.CLIPBOARD_SERVICE);
-                        if (PreferencesActivity.decodeDecimalNCR(context)) {
-                            cm.setText(Converter.convertDecNCR2Char(m.getBody()));
-                        } else {
-                            cm.setText(m.getBody());
-                        }
-                        break;
-                    case WHICH_VIEW_DETAILS:
-                        final int t = m.getType();
-                        Builder b = new Builder(context);
-                        b.setTitle(R.string.view_details_);
-                        b.setCancelable(true);
-                        StringBuilder sb = new StringBuilder();
-                        final String a = m.getAddress(context);
-                        final long d = m.getDate();
-                        final String ds = DateFormat.format(
-                                context.getString(R.string.DATEFORMAT_details), d).toString();
-                        String sentReceived;
-                        String fromTo;
-                        if (t == Calls.INCOMING_TYPE) {
-                            sentReceived = context.getString(R.string.received_);
-                            fromTo = context.getString(R.string.from_);
-                        } else if (t == Calls.OUTGOING_TYPE) {
-                            sentReceived = context.getString(R.string.sent_);
-                            fromTo = context.getString(R.string.to_);
-                        } else {
-                            sentReceived = "ukwn:";
-                            fromTo = "ukwn:";
-                        }
-                        sb.append(sentReceived).append(" ");
-                        sb.append(ds);
-                        sb.append("\n");
-                        sb.append(fromTo).append(" ");
-                        sb.append(a);
-                        sb.append("\n");
-                        sb.append(context.getString(R.string.type_));
-                        if (m.isMMS()) {
-                            sb.append(" MMS");
-                        } else {
-                            sb.append(" SMS");
-                        }
-                        b.setMessage(sb.toString());
-                        b.setPositiveButton(android.R.string.ok, null);
-                        b.show();
-                        break;
-                    case WHICH_DELETE:
-                        ConversationListActivity.deleteMessages(context, target,
-                                R.string.delete_message_, R.string.delete_message_question, null);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        });
-        builder.show();
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("deprecation")
     public final void onClick(final View v) {
         switch (v.getId()) {
@@ -763,9 +458,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public final boolean onLongClick(final View v) {
         switch (v.getId()) {
             case R.id.send_:
@@ -776,13 +468,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         }
     }
 
-    /**
-     * Build an {@link Intent} for sending it.
-     *
-     * @param autosend    autosend
-     * @param showChooser show chooser
-     * @return {@link Intent}
-     */
     private Intent buildIntent(final boolean autosend, final boolean showChooser) {
         //noinspection ConstantConditions
         if (conv == null || conv.getContact() == null) {
@@ -805,12 +490,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         }
     }
 
-    /**
-     * Answer/send message.
-     *
-     * @param autosend    enable autosend
-     * @param showChooser show chooser
-     */
     private void send(final boolean autosend, final boolean showChooser) {
         try {
             final Intent i = buildIntent(autosend, showChooser);
@@ -826,5 +505,10 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
             Log.e(TAG, "unable to launch sender app", e);
             Toast.makeText(this, R.string.error_sending_failed, Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        return false;
     }
 }

@@ -484,7 +484,7 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
     static int getTheme(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final String s = p.getString(PREFS_THEME, null);
-        if (s != null && THEME_BLACK.equals(s)) {
+        if (THEME_BLACK.equals(s)) {
             return R.style.Theme_SMSdroid;
         } else {
             return R.style.Theme_SMSdroid_Light;

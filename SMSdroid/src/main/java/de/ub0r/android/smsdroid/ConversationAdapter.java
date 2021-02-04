@@ -46,19 +46,8 @@ import de.ub0r.android.logg0r.Log;
  */
 public class ConversationAdapter extends ResourceCursorAdapter {
 
-    /**
-     * Tag for logging.
-     */
     static final String TAG = "coa";
-
-    /**
-     * Cursor's sort.
-     */
     public static final String SORT = Calls.DATE + " DESC";
-
-    /**
-     * Used text size, color.
-     */
     private final int textSize, textColor;
 
     /**
@@ -75,10 +64,6 @@ public class ConversationAdapter extends ResourceCursorAdapter {
      * Reference to {@link ConversationListActivity}.
      */
     private final Activity activity;
-
-    /**
-     * List of blocked numbers.
-     */
     private final String[] blacklist;
 
     /**
@@ -90,25 +75,9 @@ public class ConversationAdapter extends ResourceCursorAdapter {
      * Default {@link Drawable} for {@link Contact}s.
      */
     private Drawable defaultContactAvatar = null;
-
-    /**
-     * Convert NCR.
-     */
     private final boolean convertNCR;
-
-    /**
-     * Show emoticons as images
-     */
     private final boolean showEmoticons;
-
-    /**
-     * Use grid instead of list.
-     */
     private final boolean useGridLayout;
-
-    /**
-     * View holder.
-     */
     private static class ViewHolder {
 
         TextView tvBody;
@@ -207,9 +176,6 @@ public class ConversationAdapter extends ResourceCursorAdapter {
         // startMsgListQuery();
     }
 
-    /**
-     * Start ConversationList query.
-     */
     public final void startMsgListQuery() {
         // Cancel any pending queries
         queryHandler.cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
@@ -222,11 +188,6 @@ public class ConversationAdapter extends ResourceCursorAdapter {
             Log.e(TAG, "error starting query", e);
         }
     }
-
-    /*
-     *
-     * /** {@inheritDoc}
-     */
     @Override
     public final void bindView(final View view, final Context context, final Cursor cursor) {
         final Conversation c = Conversation.getConversation(context, cursor, false);
@@ -279,12 +240,6 @@ public class ConversationAdapter extends ResourceCursorAdapter {
             holder.ivPhoto.setVisibility(View.GONE);
         }
 
-        if (isBlocked(contact.getNumber())) {
-            holder.tvPerson.setText("[" + contact.getDisplayName() + "]");
-        } else {
-            holder.tvPerson.setText(contact.getDisplayName());
-        }
-
         // read status
         if (c.getRead() == 0) {
             holder.vRead.setVisibility(View.VISIBLE);
@@ -317,23 +272,5 @@ public class ConversationAdapter extends ResourceCursorAdapter {
         } else {
             ivPresence.setVisibility(View.GONE);
         }
-    }
-
-    /**
-     * Check if address is blacklisted.
-     *
-     * @param addr address
-     * @return true if address is blocked
-     */
-    private boolean isBlocked(final String addr) {
-        if (addr == null) {
-            return false;
-        }
-        for (String aBlacklist : blacklist) {
-            if (addr.equals(aBlacklist)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

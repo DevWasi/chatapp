@@ -18,6 +18,7 @@
  */
 package de.ub0r.android.smsdroid;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 
@@ -30,9 +31,6 @@ import de.ub0r.android.logg0r.Log;
  */
 public final class AsyncHelper extends AsyncTask<Void, Void, Void> {
 
-    /**
-     * Tag for logging.
-     */
     static final String TAG = "ash";
 
     /**
@@ -43,16 +41,13 @@ public final class AsyncHelper extends AsyncTask<Void, Void, Void> {
     /**
      * {@link Context}.
      */
+    @SuppressLint("StaticFieldLeak")
     private final Context context;
 
     /**
      * {@link Conversation}.
      */
     private final Conversation conv;
-
-    /**
-     * Changed anything?
-     */
     private boolean changed = false;
 
     /**
@@ -74,8 +69,7 @@ public final class AsyncHelper extends AsyncTask<Void, Void, Void> {
      * @param c       {@link Conversation}
      * @param sync    fetch of information
      */
-    public static void fillConversation(final Context context, final Conversation c,
-            final boolean sync) {
+    public static void fillConversation(final Context context, final Conversation c, final boolean sync) {
         Log.d(TAG, "fillConversation(ctx, conv, ", sync, ")");
         if (context == null || c == null || c.getThreadId() < 0) {
             return;
@@ -92,9 +86,6 @@ public final class AsyncHelper extends AsyncTask<Void, Void, Void> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected Void doInBackground(final Void... arg0) {
         if (conv == null) {
@@ -110,9 +101,6 @@ public final class AsyncHelper extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void onPostExecute(final Void result) {
         if (changed && adapter != null) {

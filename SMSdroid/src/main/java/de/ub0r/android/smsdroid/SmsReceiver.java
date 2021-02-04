@@ -149,7 +149,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
     @Override
     public final void onReceive(final Context context, final Intent intent) {
-        if (SMSdroid.isDefaultApp(context)) {
+        if (ChatApp.isDefaultApp(context)) {
             handleOnReceive(this, context, intent);
         }
     }
@@ -466,7 +466,7 @@ public class SmsReceiver extends BroadcastReceiver {
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             defaultPendingIntent = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_CANCEL_CURRENT);
         } else {
-            final NotificationCompat.Builder nb = new NotificationCompat.Builder(context, SMSdroid.NOTIFICATION_CHANNEL_ID_MESSAGES);
+            final NotificationCompat.Builder nb = new NotificationCompat.Builder(context, ChatApp.NOTIFICATION_CHANNEL_ID_MESSAGES);
             Intent defaultIntent;
             if (tid >= 0) {
                 uri = Uri.parse(MessageListActivity.URI + tid);
@@ -631,7 +631,7 @@ public class SmsReceiver extends BroadcastReceiver {
             String title = context.getString(R.string.error_sending_failed);
 
             final int[] ledFlash = PreferencesActivity.getLEDflash(context);
-            final NotificationCompat.Builder b = new NotificationCompat.Builder(context, SMSdroid.NOTIFICATION_CHANNEL_ID_FAILD_SENDING_MESSAGE)
+            final NotificationCompat.Builder b = new NotificationCompat.Builder(context, ChatApp.NOTIFICATION_CHANNEL_ID_FAILD_SENDING_MESSAGE)
                     .setSmallIcon(android.R.drawable.stat_sys_warning)
                     .setTicker(title)
                     .setWhen(date)

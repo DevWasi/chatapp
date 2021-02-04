@@ -24,11 +24,6 @@ import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-/**
- * Display About Activity.
- *
- * @author flx
- */
 public final class AboutActivity extends AppCompatActivity {
 
     @Override

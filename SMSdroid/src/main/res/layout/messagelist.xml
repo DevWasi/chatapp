@@ -45,7 +45,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:drawableTop="@drawable/ic_action_send_dark"
                 android:text="@string/send_"/>
@@ -54,7 +53,6 @@
                 android:id="@+id/text"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_toLeftOf="@id/send_"
                 android:layout_toStartOf="@id/send_"
                 android:minHeight="@dimen/edit_text_height_min"
                 android:maxHeight="@dimen/edit_text_height_max"
@@ -62,14 +60,13 @@
                 android:hint="@string/text_hint"
                 android:imeOptions="actionDone|flagNoEnterAction"
                 android:inputType="textMultiLine|textCapSentences|textAutoCorrect"
-                android:nextFocusRight="@+id/send_"/>
+                android:nextFocusRight="@+id/send_" android:autofillHints=""/>
 
         <TextView
                 android:id="@+id/text_"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@id/text"
-                android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:background="#88000000"
                 android:paddingBottom="3dip"
@@ -83,7 +80,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@id/text"
-                android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:background="#88000000"
                 android:clickable="true"
