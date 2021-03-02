@@ -19,27 +19,18 @@
 package de.ub0r.android.smsdroid;
 
 import android.Manifest;
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.content.ActivityNotFoundException;
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Telephony;
-import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -60,8 +51,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Calendar;
 
 import de.ub0r.android.lib.Utils;
-import de.ub0r.android.lib.apis.Contact;
-import de.ub0r.android.lib.apis.ContactsWrapper;
 import de.ub0r.android.logg0r.Log;
 
 public final class ConversationListActivity extends AppCompatActivity implements
@@ -69,20 +58,11 @@ public final class ConversationListActivity extends AppCompatActivity implements
 
     public static final String TAG = "main";
     static final Uri URI = Uri.parse("content://mms-sms/conversations/");
-    private static final int WHICH_N = 6;
-    private static final int WHICH_ANSWER = 0;
-    private static final int WHICH_CALL = 1;
-    private static final int WHICH_VIEW_CONTACT = 2;
-    private static final int WHICH_VIEW = 3;
-    private static final int WHICH_DELETE = 4;
-    private static final int WHICH_MARK_SPAM = 5;
-
     public static final long MIN_DATE = 10000000000L;
     public static final long MILLIS = 1000L;
     public static boolean showContactPhoto = false;
 
     public static boolean showEmoticons = false;
-    private String[] longItemClickDialog = null;
     private ConversationAdapter adapter = null;
 
     private static final Calendar CAL_DAYAGO = Calendar.getInstance();
@@ -109,7 +89,7 @@ public final class ConversationListActivity extends AppCompatActivity implements
     }
 
     private AbsListView getListView() {
-        return (AbsListView) findViewById(android.R.id.list);
+        return findViewById(android.R.id.list);
     }
 
     private void setListAdapter(final ListAdapter la) {
@@ -160,7 +140,6 @@ public final class ConversationListActivity extends AppCompatActivity implements
 
         final AbsListView list = getListView();
         list.setOnItemClickListener(this);
-        longItemClickDialog = new String[WHICH_N];
 
         if (ChatApp.isDefaultApp(this)) {
             initAdapter();
@@ -169,22 +148,13 @@ public final class ConversationListActivity extends AppCompatActivity implements
             b.setTitle(R.string.not_default_app);
             b.setMessage(R.string.not_default_app_message);
             b.setCancelable(false);
-            b.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(final DialogInterface dialogInterface, final int i) {
-                    ConversationListActivity.this.finish();
-                }
-            });
-            b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                @TargetApi(Build.VERSION_CODES.KITKAT)
-                @Override
-                public void onClick(final DialogInterface dialogInterface, final int i) {
-                    Intent intent =
-                            new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
-                    intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME,
-                            BuildConfig.APPLICATION_ID);
-                    startActivity(intent);
-                }
+            b.setNegativeButton(android.R.string.cancel, (dialogInterface, i12) -> ConversationListActivity.this.finish());
+            b.setPositiveButton(android.R.string.ok, (dialogInterface, i1) -> {
+                Intent intent =
+                        new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+                intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME,
+                        BuildConfig.APPLICATION_ID);
+                startActivity(intent);
             });
             b.show();
         }
@@ -193,23 +163,13 @@ public final class ConversationListActivity extends AppCompatActivity implements
     private void initAdapter() {
         if (ChatApp.requestPermission(this, Manifest.permission.READ_SMS,
                 PERMISSIONS_REQUEST_READ_SMS, R.string.permissions_read_sms,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        finish();
-                    }
-                })) {
+                (dialogInterface, i) -> finish())) {
             return;
         }
 
         if (ChatApp.requestPermission(this, Manifest.permission.READ_CONTACTS,
                 PERMISSIONS_REQUEST_READ_CONTACTS, R.string.permissions_read_contacts,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        finish();
-                    }
-                })) {
+                (dialogInterface, i) -> finish())) {
             return;
         }
 
@@ -246,13 +206,12 @@ public final class ConversationListActivity extends AppCompatActivity implements
 
     @Override
     public boolean onPrepareOptionsMenu(final Menu menu) {
-        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean hideDeleteAll = p.getBoolean(PreferencesActivity.PREFS_HIDE_DELETE_ALL_THREADS, false);
+        PreferenceManager.getDefaultSharedPreferences(this);
         return true;
     }
 
     @Override
-    public void onRequestPermissionsResult(final int requestCode, @NonNull final String permissions[], @NonNull final int[] grantResults) {
+    public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions, @NonNull final int[] grantResults) {
         switch (requestCode) {
             case PERMISSIONS_REQUEST_READ_SMS: {
                 if (grantResults.length > 0
@@ -276,7 +235,6 @@ public final class ConversationListActivity extends AppCompatActivity implements
                     Log.e(TAG, "permission for reading contacts denied, exit");
                     finish();
                 }
-                return;
             }
         }
     }

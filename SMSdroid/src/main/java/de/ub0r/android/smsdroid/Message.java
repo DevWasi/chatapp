@@ -33,7 +33,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.CallLog.Calls;
-import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.widget.Toast;
 
@@ -101,19 +100,6 @@ public final class Message {
             PROJECTION[INDEX_ADDRESS], // 5
             PROJECTION[INDEX_BODY], // 6
     };
-
-    public static final String[] PROJECTION_MMS = { //
-            PROJECTION[INDEX_ID], // 0
-            PROJECTION[INDEX_READ], // 1
-            PROJECTION[INDEX_DATE], // 2
-            PROJECTION[INDEX_THREADID], // 3
-            "m_type", // 4
-            PROJECTION[INDEX_ID], // 5
-            PROJECTION[INDEX_ID], // 6
-            "sub", // 7
-            "m_type", // 8
-    };
-
     public static final String[] PROJECTION_JOIN = {
             PROJECTION[INDEX_ID],
             PROJECTION[INDEX_READ],
@@ -136,11 +122,7 @@ public final class Message {
 
     static final String[] SELECTION_UNREAD = new String[]{"0"};
 
-    static final String[] SELECTION_READ = new String[]{"1"};
-
     public static final String SORT_USD = Calls.DATE + " ASC";
-
-    public static final String SORT_NORM = Calls.DATE + " DESC";
 
     public static final int SMS_IN = Calls.INCOMING_TYPE;
 
@@ -152,15 +134,13 @@ public final class Message {
 
     public static final int MMS_OUT = 128;
 
-    public static final int MMS_TOLOAD = 130;
-
     private final long id;
 
     private final long threadId;
 
     private long date;
 
-    private String address;
+    private final String address;
 
     private CharSequence body;
 
@@ -168,7 +148,7 @@ public final class Message {
 
     private int read;
 
-    private String subject = null;
+    private String subject;
 
     private Bitmap picture = null;
 
@@ -225,9 +205,6 @@ public final class Message {
 
         Log.d(TAG, "threadId: ", threadId);
         Log.d(TAG, "address: ", address);
-        // Log.d(TAG, "subject: ", subject);
-        // Log.d(TAG, "body: ", body);
-        // Log.d(TAG, "type: ", type);
     }
 
     public void update(final Cursor cursor) {
@@ -257,7 +234,7 @@ public final class Message {
                 baos.write(buffer, 0, len);
                 len = is.read(buffer);
             }
-            ret = new String(baos.toByteArray());
+            ret = baos.toString();
             Log.d(TAG, ret);
         } catch (IOException e) {
             Log.e(TAG, "Failed to load part data", e);
@@ -372,12 +349,6 @@ public final class Message {
         }
     }
 
-    public static void flushCache() {
-        synchronized (CACHE) {
-            CACHE.clear();
-        }
-    }
-
     public long getId() {
         return id;
     }
@@ -388,25 +359,6 @@ public final class Message {
 
     public long getDate() {
         return date;
-    }
-
-    public String getAddress(final Context context) {
-        if (address == null && context != null) {
-            final String select = Message.PROJECTION[Message.INDEX_THREADID] + " = '"
-                    + getThreadId() + "' and " + Message.PROJECTION[Message.INDEX_ADDRESS]
-                    + " != ''";
-            Log.d(TAG, "select: ", select);
-            final Cursor cur = context.getContentResolver().query(Uri.parse("content://sms/"),
-                    Message.PROJECTION, select, null, null);
-            if (cur != null && cur.moveToFirst()) {
-                address = cur.getString(Message.INDEX_ADDRESS);
-                Log.d(TAG, "found address: ", address);
-            }
-            if (cur != null) {
-                cur.close();
-            }
-        }
-        return address;
     }
 
     public CharSequence getBody() {
@@ -442,84 +394,80 @@ public final class Message {
             return null;
         }
 
-        return new OnLongClickListener() {
-            @Override
-            public boolean onLongClick(final View v) {
-                // check/request permission Manifest.permission.WRITE_EXTERNAL_STORAGE
-                if (ChatApp.requestPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE, 0, R.string.permissions_write_external_storage, null)) {
-                    return true;
-                }
-
-                try {
-                    Log.d(TAG, "save attachment: ", Message.this.id);
-                    String fn = ATTACHMENT_FILE;
-                    final Intent ci = Message.this.contentIntent;
-                    final String ct = ci.getType();
-                    Log.d(TAG, "content type: ", ct);
-                    if (ct == null) {
-                        fn += "null";
-                    } else if (ct.startsWith("image/")) {
-                        switch (ct) {
-                            case "image/jpeg":
-                                fn += "jpg";
-                                break;
-                            case "image/gif":
-                                fn += "gif";
-                                break;
-                            default:
-                                fn += "png";
-                                break;
-                        }
-                    } else if (ct.startsWith("audio/")) {
-                        switch (ct) {
-                            case "audio/3gpp":
-                                fn += "3gpp";
-                                break;
-                            case "audio/mpeg":
-                                fn += "mp3";
-                                break;
-                            case "audio/mid":
-                                fn += "mid";
-                                break;
-                            default:
-                                fn += "wav";
-                                break;
-                        }
-                    } else if (ct.startsWith("video/")) {
-                        if (ct.equals("video/3gpp")) {
-                            fn += "3gpp";
-                        } else {
-                            fn += "avi";
-                        }
-                    } else {
-                        fn += "ukn";
-                    }
-                    final File file = Message.this.createUniqueFile(
-                            Environment.getExternalStorageDirectory(), fn);
-                    //noinspection ConstantConditions
-                    InputStream in = context.getContentResolver().openInputStream(ci.getData());
-                    OutputStream out = new FileOutputStream(file);
-                    IOUtils.copy(in, out);
-                    out.flush();
-                    out.close();
-                    //noinspection ConstantConditions
-                    in.close();
-                    Log.i(TAG, "attachment saved: ", file.getPath());
-                    Toast.makeText(context,
-                            context.getString(R.string.attachment_saved) + " " + fn,
-                            Toast.LENGTH_LONG).show();
-                    return true;
-                } catch (IOException e) {
-                    Log.e(TAG, "IO ERROR", e);
-                    Toast.makeText(context, R.string.attachment_not_saved, Toast.LENGTH_LONG)
-                            .show();
-                } catch (NullPointerException e) {
-                    Log.e(TAG, "NULL ERROR", e);
-                    Toast.makeText(context, R.string.attachment_not_saved, Toast.LENGTH_LONG)
-                            .show();
-                }
+        return v -> {
+            // check/request permission Manifest.permission.WRITE_EXTERNAL_STORAGE
+            if (ChatApp.requestPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE, 0, R.string.permissions_write_external_storage, null)) {
                 return true;
             }
+
+            try {
+                Log.d(TAG, "save attachment: ", Message.this.id);
+                String fn = ATTACHMENT_FILE;
+                final Intent ci = Message.this.contentIntent;
+                final String ct = ci.getType();
+                Log.d(TAG, "content type: ", ct);
+                if (ct == null) {
+                    fn += "null";
+                } else if (ct.startsWith("image/")) {
+                    switch (ct) {
+                        case "image/jpeg":
+                            fn += "jpg";
+                            break;
+                        case "image/gif":
+                            fn += "gif";
+                            break;
+                        default:
+                            fn += "png";
+                            break;
+                    }
+                } else if (ct.startsWith("audio/")) {
+                    switch (ct) {
+                        case "audio/3gpp":
+                            fn += "3gpp";
+                            break;
+                        case "audio/mpeg":
+                            fn += "mp3";
+                            break;
+                        case "audio/mid":
+                            fn += "mid";
+                            break;
+                        default:
+                            fn += "wav";
+                            break;
+                    }
+                } else if (ct.startsWith("video/")) {
+                    if (ct.equals("video/3gpp")) {
+                        fn += "3gpp";
+                    } else {
+                        fn += "avi";
+                    }
+                } else {
+                    fn += "ukn";
+                }
+                final File file = Message.this.createUniqueFile(
+                        Environment.getExternalStorageDirectory(), fn);
+                InputStream in = context.getContentResolver().openInputStream(ci.getData());
+                OutputStream out = new FileOutputStream(file);
+                IOUtils.copy(in, out);
+                out.flush();
+                out.close();
+                in.close();
+                assert file != null;
+                Log.i(TAG, "attachment saved: ", file.getPath());
+                Toast.makeText(context,
+                        context.getString(R.string.attachment_saved) + " " + fn,
+                        Toast.LENGTH_LONG).show();
+                return true;
+            } catch (IOException e) {
+                Log.e(TAG, "IO ERROR", e);
+                Toast.makeText(context, R.string.attachment_not_saved, Toast.LENGTH_LONG)
+                        .show();
+            } catch (NullPointerException e) {
+                Log.e(TAG, "NULL ERROR", e);
+                Toast.makeText(context, R.string.attachment_not_saved, Toast.LENGTH_LONG)
+                        .show();
+            }
+            return true;
         };
     }
 

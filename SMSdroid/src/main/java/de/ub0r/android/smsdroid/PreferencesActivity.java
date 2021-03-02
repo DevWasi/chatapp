@@ -29,7 +29,6 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.widget.SimpleAdapter;
@@ -43,166 +42,65 @@ import java.util.regex.PatternSyntaxException;
 import de.ub0r.android.lib.IPreferenceContainer;
 import de.ub0r.android.lib.Utils;
 import de.ub0r.android.logg0r.Log;
-import yuku.ambilwarna.AmbilWarnaDialog;
-import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 
-/**
- * Preferences.
- *
- * @author flx
- */
 public class PreferencesActivity extends PreferenceActivity implements IPreferenceContainer {
 
-    /**
-     * Tag for logging.
-     */
     static final String TAG = "prefs";
 
-    private static final String PREFS_BEHAVIOR = "prefs_behavior";
-
-    /**
-     * Preference's name: vibrate on receive.
-     */
     static final String PREFS_VIBRATE = "receive_vibrate";
 
-    /**
-     * Preference's name: sound on receive.
-     */
     static final String PREFS_SOUND = "receive_sound";
 
-    /**
-     * Preference's name: led color.
-     */
     private static final String PREFS_LED_COLOR = "receive_led_color";
 
-    /**
-     * Preference's name: led flash.
-     */
     private static final String PREFS_LED_FLASH = "receive_led_flash";
 
-    /**
-     * Preference's name: vibrator pattern.
-     */
     private static final String PREFS_VIBRATOR_PATTERN = "receive_vibrate_mode";
 
-    /**
-     * Preference's name: enable notifications.
-     */
     static final String PREFS_NOTIFICATION_ENABLE = "notification_enable";
 
-    /**
-     * Preference's name: hide sender/text in notifications.
-     */
     static final String PREFS_NOTIFICATION_PRIVACY = "receive_privacy";
 
-    /**
-     * Preference's name: icon for notifications.
-     */
     private static final String PREFS_NOTIFICATION_ICON = "notification_icon";
-
-    /**
-     * Prefernece's name: show contact's photo.
-     */
+    
     static final String PREFS_CONTACT_PHOTO = "show_contact_photo";
 
-    /**
-     * Preference's name: show emoticons in messagelist.
-     */
     static final String PREFS_EMOTICONS = "show_emoticons";
 
-    /**
-     * Preference's name: bubbles for incoming messages.
-     */
     private static final String PREFS_BUBBLES_IN = "bubbles_in";
 
-    /**
-     * Preference's name: bubbles for outgoing messages.
-     */
     private static final String PREFS_BUBBLES_OUT = "bubbles_out";
 
-    /**
-     * Preference's name: show full date and time.
-     */
     static final String PREFS_FULL_DATE = "show_full_date";
 
-    /**
-     * Preference's name: hide send button.
-     */
     static final String PREFS_HIDE_SEND = "hide_send";
-
-    /**
-     * Preference's name: hide restore.
-     */
-    static final String PREFS_HIDE_RESTORE = "hide_restore";
-
-    /**
-     * Preference's name: hide paste button.
-     */
+    
     static final String PREFS_HIDE_PASTE = "hide_paste";
 
-    /**
-     * Preference's name: hide widget's label.
-     */
     static final String PREFS_HIDE_WIDGET_LABEL = "hide_widget_label";
 
-    /**
-     * Preference's name: hide delete all threads.
-     */
     static final String PREFS_HIDE_DELETE_ALL_THREADS = "hide_delete_all_threads";
 
-    /**
-     * Preference's name: hide message count.
-     */
     static final String PREFS_HIDE_MESSAGE_COUNT = "hide_message_count";
 
-    /**
-     * Preference's name: theme.
-     */
     private static final String PREFS_THEME = "theme";
 
-    /**
-     * Theme: black.
-     */
     private static final String THEME_BLACK = "black";
 
-    /**
-     * Preference's name: text size.
-     */
     private static final String PREFS_TEXTSIZE = "textsizen";
 
-    /**
-     * Preference's name: text color.
-     */
     private static final String PREFS_TEXTCOLOR = "textcolor";
 
-    /**
-     * Preference's name: ignore text color for list ov threads.
-     */
     private static final String PREFS_TEXTCOLOR_IGNORE_CONV = "text_color_ignore_conv";
 
-    /**
-     * Preference's name: enable autosend.
-     */
     public static final String PREFS_ENABLE_AUTOSEND = "enable_autosend";
 
-    /**
-     * Preference's name: mobile_only.
-     */
     public static final String PREFS_MOBILE_ONLY = "mobile_only";
 
-    /**
-     * Preference's name: edit_short_text.
-     */
     public static final String PREFS_EDIT_SHORT_TEXT = "edit_short_text";
 
-    /**
-     * Preference's name: show text field.
-     */
     public static final String PREFS_SHOWTEXTFIELD = "show_textfield";
 
-    /**
-     * Preference's name: show target app.
-     */
     public static final String PREFS_SHOWTARGETAPP = "show_target_app";
 
     /**
@@ -214,42 +112,17 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
      * Preference's name: decode decimal ncr.
      */
     public static final String PREFS_DECODE_DECIMAL_NCR = "decode_decimal_ncr";
-
-    /**
-     * Preference's name: activate sender.
-     */
-    public static final String PREFS_ACTIVATE_SENDER = "activate_sender";
-
-    /**
-     * Preference's name: forward sms sender.
-     */
+    
     public static final String PREFS_FORWARD_SMS_CLEAN = "forwarded_sms_clean";
 
-    /**
-     * Preference's name: prefix regular expression.
-     */
     private static final String PREFS_REGEX = "regex";
 
-    /**
-     * Preference's name: prefix replace.
-     */
     private static final String PREFS_REPLACE = "replace";
-
-    private static final String PREFS_EU_USER_CONSENT_POLICY = "eu_user_consent_policy";
-
-    /**
-     * Number of regular expressions.
-     */
+    
     private static final int PREFS_REGEX_COUNT = 3;
 
-    /**
-     * Default color.
-     */
     private static final int BLACK = 0xff000000;
 
-    /**
-     * Drawable resources for notification icons.
-     */
     private static final int[] NOTIFICAION_IMG = new int[]{R.drawable.stat_notify_sms,
             R.drawable.stat_notify_sms_gingerbread, R.drawable.stat_notify_email_generic,
             R.drawable.stat_notify_sms_black, R.drawable.stat_notify_sms_green,
@@ -308,16 +181,8 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
     private static class OnNotificationIconClickListener implements
             Preference.OnPreferenceClickListener {
 
-        /**
-         * {@link Context}.
-         */
         private final Context ctx;
 
-        /**
-         * Default constructor.
-         *
-         * @param context {@link Context}
-         */
         public OnNotificationIconClickListener(final Context context) {
             ctx = context;
         }
@@ -349,23 +214,10 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
         }
     }
 
-    /**
-     * Listen to clicks on "bubble" preferences.
-     *
-     * @author flx
-     */
     private static class OnBubblesClickListener implements Preference.OnPreferenceClickListener {
 
-        /**
-         * {@link Context}.
-         */
         private final Context ctx;
-
-        /**
-         * Default constructor.
-         *
-         * @param context {@link Context}
-         */
+        
         public OnBubblesClickListener(final Context context) {
             ctx = context;
         }
@@ -451,36 +303,11 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
                         c = BLACK;
                     }
 
-                    final AmbilWarnaDialog dialog = new AmbilWarnaDialog(pc.getContext(), c,
-                            new OnAmbilWarnaListener() {
-                                @Override
-                                public void onOk(final AmbilWarnaDialog dialog, final int color) {
-                                    prefs.edit().putInt(PREFS_TEXTCOLOR, color).apply();
-                                }
-
-                                @Override
-                                public void onCancel(final AmbilWarnaDialog dialog) {
-                                    // nothing to do
-                                }
-
-                                public void onReset(final AmbilWarnaDialog dialog) {
-                                    prefs.edit().putInt(PREFS_TEXTCOLOR, 0).apply();
-                                }
-                            });
-
-                    dialog.show();
                     return true;
                 }
             });
         }
     }
-
-    /**
-     * Get Theme from Preferences.
-     *
-     * @param context {@link Context}
-     * @return theme
-     */
     static int getTheme(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final String s = p.getString(PREFS_THEME, null);
@@ -491,12 +318,6 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
         }
     }
 
-    /**
-     * Get text's size from Preferences.
-     *
-     * @param context {@link Context}
-     * @return theme
-     */
     static int getTextsize(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final String s = p.getString(PREFS_TEXTSIZE, null);
@@ -504,12 +325,6 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
         return Utils.parseInt(s, 0);
     }
 
-    /**
-     * Get text's color from Preferences.
-     *
-     * @param context {@link Context}
-     * @return theme
-     */
     static int getTextcolor(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         if (context instanceof ConversationListActivity
@@ -521,24 +336,12 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
         return ret;
     }
 
-    /**
-     * Get LED color pattern from Preferences.
-     *
-     * @param context {@link Context}
-     * @return pattern
-     */
     static int getLEDcolor(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final String s = p.getString(PREFS_LED_COLOR, "65280");
         return Integer.parseInt(s);
     }
 
-    /**
-     * Get LED flash pattern from Preferences.
-     *
-     * @param context {@link Context}
-     * @return pattern
-     */
     static int[] getLEDflash(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final String s = p.getString(PREFS_LED_FLASH, "500_2000");
@@ -549,12 +352,6 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
         return ret;
     }
 
-    /**
-     * Get vibrator pattern from Preferences.
-     *
-     * @param context {@link Context}
-     * @return pattern
-     */
     static long[] getVibratorPattern(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final String s = p.getString(PREFS_VIBRATOR_PATTERN, "0");
@@ -567,12 +364,6 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
         return ret;
     }
 
-    /**
-     * Get drawable resource for notification icon.
-     *
-     * @param context {@link Context}
-     * @return resource id
-     */
     static int getNotificationIcon(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final int i = p.getInt(PREFS_NOTIFICATION_ICON, R.drawable.stat_notify_sms);
@@ -582,12 +373,6 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
         return R.drawable.stat_notify_sms;
     }
 
-    /**
-     * Get drawable resource for bubble for incoming messages.
-     *
-     * @param context {@link Context}
-     * @return resource id
-     */
     static int getBubblesIn(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final int i = p.getInt(PREFS_BUBBLES_IN, R.drawable.bubble_old_turquoise_left);
@@ -597,12 +382,6 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
         return R.drawable.bubble_old_turquoise_left;
     }
 
-    /**
-     * Get drawable resource for bubble for outgoing messages.
-     *
-     * @param context {@link Context}
-     * @return resource id
-     */
     static int getBubblesOut(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final int i = p.getInt(PREFS_BUBBLES_OUT, R.drawable.bubble_old_green_right);
@@ -612,34 +391,17 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
         return R.drawable.bubble_old_green_right;
     }
 
-    /**
-     * Get text's size from Preferences.
-     *
-     * @param context {@link Context}
-     * @return theme
-     */
     static boolean decodeDecimalNCR(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean b = p.getBoolean(PREFS_DECODE_DECIMAL_NCR, true);
         Log.d(TAG, "decode decimal ncr: ", b);
         return b;
     }
-
-    /**
-     * Get the emoticons show state
-     */
     static boolean showEmoticons(final Context context) {
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         return p.getBoolean(PREFS_EMOTICONS, true);
     }
-
-    /**
-     * Fix a number with regex load from {@link SharedPreferences}.
-     *
-     * @param context {@link Context}
-     * @param number  number
-     * @return fixed number
-     */
+    
     static String fixNumber(final Context context, final String number) {
         String ret = number;
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
@@ -660,16 +422,13 @@ public class PreferencesActivity extends PreferenceActivity implements IPreferen
 
     @Override
     public final boolean onOptionsItemSelected(final MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                // app icon in Action Bar clicked; go home
-                Intent intent = new Intent(this, ConversationListActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {// app icon in Action Bar clicked; go home
+            Intent intent = new Intent(this, ConversationListActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

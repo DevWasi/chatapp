@@ -26,49 +26,25 @@ import java.util.concurrent.RejectedExecutionException;
 
 import de.ub0r.android.logg0r.Log;
 
-/**
- * @author flx
- */
 public final class AsyncHelper extends AsyncTask<Void, Void, Void> {
 
     static final String TAG = "ash";
 
-    /**
-     * {@link ConversationAdapter} to invalidate on new data.
-     */
+
     private static ConversationAdapter adapter = null;
 
-    /**
-     * {@link Context}.
-     */
     @SuppressLint("StaticFieldLeak")
     private final Context context;
 
-    /**
-     * {@link Conversation}.
-     */
     private final Conversation conv;
     private boolean changed = false;
 
-    /**
-     * Fill {@link Conversation}.
-     *
-     * @param c   {@link Context}
-     * @param con {@link Conversation}
-     */
 
     private AsyncHelper(final Context c, final Conversation con) {
         context = c;
         conv = con;
     }
 
-    /**
-     * Fill Conversations data. If needed: spawn threads.
-     *
-     * @param context {@link Context}
-     * @param c       {@link Conversation}
-     * @param sync    fetch of information
-     */
     public static void fillConversation(final Context context, final Conversation c, final boolean sync) {
         Log.d(TAG, "fillConversation(ctx, conv, ", sync, ")");
         if (context == null || c == null || c.getThreadId() < 0) {
@@ -107,12 +83,6 @@ public final class AsyncHelper extends AsyncTask<Void, Void, Void> {
             adapter.notifyDataSetChanged();
         }
     }
-
-    /**
-     * Set {@link ConversationAdapter} to invalidate data after refreshing.
-     *
-     * @param a {@link ConversationAdapter}
-     */
     public static void setAdapter(final ConversationAdapter a) {
         adapter = a;
     }

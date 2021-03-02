@@ -74,29 +74,14 @@ public class MessageAdapter extends ResourceCursorAdapter {
 
     private final MessageListActivity mActivity;
 
-    /**
-     * Display Name (name if !=null, else address).
-     */
-    private String displayName = null;
+    private String displayName;
 
-    /**
-     * Used text size/color.
-     */
     private final int textSize, textColor;
 
-    /**
-     * Convert NCR.
-     */
     private final boolean convertNCR;
 
-    /**
-     * Show emoticons as images
-     */
     private final boolean showEmoticons;
 
-    /**
-     * View holder.
-     */
     private static class ViewHolder {
 
         TextView tvBody;
@@ -353,9 +338,6 @@ public class MessageAdapter extends ResourceCursorAdapter {
         } else {
             if (convertNCR) {
                 text = Converter.convertDecNCR2Char(text);
-            }
-            if (showEmoticons) {
-                text = SmileyParser.getInstance(context).addSmileySpans(text);
             }
             holder.tvBody.setText(text);
             holder.tvBody.setVisibility(View.VISIBLE);

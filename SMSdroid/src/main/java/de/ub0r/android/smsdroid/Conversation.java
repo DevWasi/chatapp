@@ -20,7 +20,6 @@ package de.ub0r.android.smsdroid;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.CallLog.Calls;
@@ -35,7 +34,6 @@ public final class Conversation {
     private static final int CACHESIZE = 50;
     private static final LinkedHashMap<Integer, Conversation> CACHE
             = new LinkedHashMap<>(26, 0.9f, true);
-    public static final Bitmap NO_PHOTO = Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565);
     static final Uri URI_SIMPLE = Uri.parse("content://mms-sms/conversations").buildUpon()
             .appendQueryParameter("simple", "true").build();
     public static final String ID = BaseColumns._ID;
@@ -50,16 +48,8 @@ public final class Conversation {
     public static final int INDEX_SIMPLE_NID = 3;
     public static final int INDEX_SIMPLE_BODY = 4;
     public static final int INDEX_SIMPLE_READ = 5;
-    public static final String[] PROJECTION_SIMPLE = { //
-            ID, // 0
-            DATE, // 1
-            COUNT, // 2
-            NID, // 3
-            BODY, // 4
-            READ, // 5
-    };
+    public static final String[] PROJECTION_SIMPLE = {ID, DATE, COUNT, NID, BODY, READ,};
 
-    static final String DATE_FORMAT = "dd.MM. kk:mm";
     private static long validCache = 0;
     private int id;
     private final int threadId;
@@ -67,8 +57,8 @@ public final class Conversation {
     private long date;
     private String body;
     private int read;
-    private int count = -1;
-    private long lastUpdate = 0L;
+    private int count;
+    private long lastUpdate;
 
     private Conversation(final Context context, final Cursor cursor, final boolean sync) {
         threadId = cursor.getInt(INDEX_SIMPLE_ID);
@@ -148,19 +138,11 @@ public final class Conversation {
         }
     }
 
-    public static void flushCache() {
-        synchronized (CACHE) {
-            CACHE.clear();
-        }
-    }
     public static void invalidate() {
         validCache = System.currentTimeMillis();
     }
     public int getId() {
         return id;
-    }
-    public void setNumberId(final long nid) {
-        contact = new Contact(nid);
     }
     public int getThreadId() {
         return threadId;
@@ -181,10 +163,6 @@ public final class Conversation {
 
     public int getRead() {
         return read;
-    }
-
-    public void setRead(final int status) {
-        read = status;
     }
 
     public int getCount() {

@@ -1,6 +1,4 @@
-/**
- *
- */
+
 package de.ub0r.android.smsdroid;
 
 import android.app.PendingIntent;
@@ -16,7 +14,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.telephony.SmsManager;
-import android.text.ClipboardManager;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -25,7 +22,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,73 +32,30 @@ import java.util.ArrayList;
 import de.ub0r.android.lib.apis.ContactsWrapper;
 import de.ub0r.android.logg0r.Log;
 
-/**
- * Class sending messages via standard Messaging interface.
- *
- * @author flx
- */
 public final class SenderActivity extends AppCompatActivity implements OnClickListener {
 
-    /**
-     * Tag for output.
-     */
     private static final String TAG = "send";
 
-    /**
-     * {@link Uri} for saving messages.
-     */
     private static final Uri URI_SMS = Uri.parse("content://sms");
 
-    /**
-     * {@link Uri} for saving sent messages.
-     */
     public static final Uri URI_SENT = Uri.parse("content://sms/sent");
 
-    /**
-     * Projection for getting the id.
-     */
     private static final String[] PROJECTION_ID = new String[]{BaseColumns._ID};
 
-    /**
-     * SMS DB: address.
-     */
     private static final String ADDRESS = "address";
 
-    /**
-     * SMS DB: read.
-     */
     private static final String READ = "read";
 
-    /**
-     * SMS DB: type.
-     */
     public static final String TYPE = "type";
 
-    /**
-     * SMS DB: body.
-     */
     private static final String BODY = "body";
 
-    /**
-     * SMS DB: date.
-     */
     private static final String DATE = "date";
 
-    /**
-     * Message set action.
-     */
     public static final String MESSAGE_SENT_ACTION = "com.android.mms.transaction.MESSAGE_SENT";
 
-    /**
-     * Hold recipient and text.
-     */
     private String to, text;
 
-    /**
-     * {@link ClipboardManager}.
-     */
-    @SuppressWarnings("deprecation")
-    private ClipboardManager cbmgr;
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -116,11 +69,6 @@ public final class SenderActivity extends AppCompatActivity implements OnClickLi
         handleIntent(intent);
     }
 
-    /**
-     * Handle {@link Intent}.
-     *
-     * @param intent {@link Intent}
-     */
     @SuppressWarnings("deprecation")
     private void handleIntent(final Intent intent) {
         if (parseIntent(intent)) {
@@ -140,11 +88,9 @@ public final class SenderActivity extends AppCompatActivity implements OnClickLi
                 setTheme(PreferencesActivity.getTheme(this));
                 setContentView(R.layout.sender);
                 findViewById(R.id.text_paste).setOnClickListener(this);
-                final EditText et = (EditText) findViewById(R.id.text);
-                et.addTextChangedListener(new MyTextWatcher(this, (TextView) this
-                        .findViewById(R.id.text_paste), (TextView) findViewById(R.id.text_)));
+                final EditText et = findViewById(R.id.text);
                 et.setText(text);
-                final MultiAutoCompleteTextView mtv = (MultiAutoCompleteTextView) this
+                final MultiAutoCompleteTextView mtv = this
                         .findViewById(R.id.to);
                 final MobilePhoneAdapter mpa = new MobilePhoneAdapter(this);
                 final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
@@ -175,7 +121,6 @@ public final class SenderActivity extends AppCompatActivity implements OnClickLi
                 } else {
                     mtv.requestFocus();
                 }
-                cbmgr = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 int flags = et.getInputType();
                 if (p.getBoolean(PreferencesActivity.PREFS_EDIT_SHORT_TEXT, true)) {
                     flags |= InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE;
@@ -187,12 +132,6 @@ public final class SenderActivity extends AppCompatActivity implements OnClickLi
         }
     }
 
-    /**
-     * Parse data pushed by {@link Intent}.
-     *
-     * @param intent {@link Intent}
-     * @return true if message is ready to send
-     */
     private boolean parseIntent(final Intent intent) {
         Log.d(TAG, "parseIntent(", intent, ")");
         if (intent == null) {
@@ -250,16 +189,9 @@ public final class SenderActivity extends AppCompatActivity implements OnClickLi
         return threadId;
     }
 
-    /**
-     * Send a message to a single recipient.
-     *
-     * @param recipient recipient
-     * @param message   message
-     */
     private void send(final String recipient, final String message) {
         Log.d(TAG, "text: ", recipient);
 
-        // save draft
         final ContentResolver cr = getContentResolver();
         ContentValues values = new ContentValues();
         values.put(TYPE, Message.SMS_DRAFT);
@@ -341,18 +273,8 @@ public final class SenderActivity extends AppCompatActivity implements OnClickLi
         return true;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void onClick(final View v) {
-        switch (v.getId()) {
-            case R.id.text_paste:
-                final CharSequence s = cbmgr.getText();
-                ((EditText) findViewById(R.id.text)).setText(s);
-                return;
-            default:
-                break;
-        }
-    }
+    public void onClick(final View v) {}
 
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
@@ -370,9 +292,9 @@ public final class SenderActivity extends AppCompatActivity implements OnClickLi
                 startActivity(intent);
                 return true;
             case R.id.item_send:
-                EditText et = (EditText) findViewById(R.id.text);
+                EditText et = findViewById(R.id.text);
                 text = et.getText().toString();
-                et = (MultiAutoCompleteTextView) findViewById(R.id.to);
+                et = findViewById(R.id.to);
                 to = et.getText().toString();
                 if (send()) {
                     finish();

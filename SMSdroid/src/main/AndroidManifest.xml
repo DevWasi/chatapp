@@ -84,27 +84,6 @@
             android:theme="@style/Theme.SMSdroid_Light"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="Instantiatable">
-            <intent-filter android:scheme="http">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data
-                    android:mimeType="vnd.android-dir/mms-sms"
-                    android:pathPrefix="/threadID/"
-                    android:host="TODO"
-                    tools:ignore="AppLinkUrlError" />
-            </intent-filter>
-            <intent-filter android:scheme="http">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data
-                    android:mimeType="vnd.android-dir/mms-sms"
-                    android:pathPrefix="/conversations/"
-                    android:host="TODO" />
-            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
@@ -170,14 +149,6 @@
                 <action android:name="android.provider.Telephony.WAP_PUSH_RECEIVE" />
 
                 <data android:mimeType="application/vnd.wap.mms-message" />
-            </intent-filter>
-        </receiver>
-
-        <receiver
-            android:name=".WebSMSBroadcastReceiver"
-            android:permission="de.ub0r.android.smsdroid.SAVE_TO_DB">
-            <intent-filter>
-                <action android:name="de.ub0r.android.websms.SEND_SUCCESSFUL" />
             </intent-filter>
         </receiver>
 

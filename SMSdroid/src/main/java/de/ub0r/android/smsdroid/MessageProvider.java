@@ -27,85 +27,50 @@ import android.os.ParcelFileDescriptor;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 
 import de.ub0r.android.logg0r.Log;
 
-/**
- * Provide Messages as stream.
- *
- * @author flx
- */
 public final class MessageProvider extends ContentProvider {
 
-    /**
-     * Tag for logging.
-     */
     static final String TAG = "mp";
-
-    /**
-     * Content {@link Uri} for messages.
-     */
     public static final Uri CONTENT_URI = Uri.parse("content://de.ub0r.android.smsdroid/msg");
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int delete(final Uri uri, final String selection, final String[] selectionArgs) {
         throw new UnsupportedOperationException("not implemented");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getType(final Uri uri) {
         throw new UnsupportedOperationException("not implemented");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Uri insert(final Uri uri, final ContentValues values) {
         throw new UnsupportedOperationException("not implemented");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean onCreate() {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Cursor query(final Uri uri, final String[] projection, final String selection,
             final String[] selectionArgs, final String sortOrder) {
         throw new UnsupportedOperationException("not implemented");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int update(final Uri uri, final ContentValues values, final String selection,
             final String[] selectionArgs) {
         throw new UnsupportedOperationException("not implemented");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public ParcelFileDescriptor openFile(final Uri uri, final String mode)
-            throws FileNotFoundException {
+    public ParcelFileDescriptor openFile(final Uri uri, final String mode) {
         Log.d(TAG, "openFile(", uri, ")");
         final long mid = ContentUris.parseId(uri);
         String body = null;

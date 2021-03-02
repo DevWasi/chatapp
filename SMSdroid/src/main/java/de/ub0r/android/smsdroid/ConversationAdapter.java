@@ -1,23 +1,6 @@
-/*
- * Copyright (C) 2009-2015 Felix Bechstein
- * 
- * This file is part of SMSdroid.
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; If not, see <http://www.gnu.org/licenses/>.
- */
 package de.ub0r.android.smsdroid;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
@@ -50,31 +33,15 @@ public class ConversationAdapter extends ResourceCursorAdapter {
     public static final String SORT = Calls.DATE + " DESC";
     private final int textSize, textColor;
 
-    /**
-     * {@link BackgroundQueryHandler}.
-     */
     private final BackgroundQueryHandler queryHandler;
 
-    /**
-     * Token for {@link BackgroundQueryHandler}: message list query.
-     */
     private static final int MESSAGE_LIST_QUERY_TOKEN = 0;
 
-    /**
-     * Reference to {@link ConversationListActivity}.
-     */
     private final Activity activity;
-    private final String[] blacklist;
 
-    /**
-     * {@link ContactsWrapper}.
-     */
     private static final ContactsWrapper WRAPPER = ContactsWrapper.getInstance();
 
-    /**
-     * Default {@link Drawable} for {@link Contact}s.
-     */
-    private Drawable defaultContactAvatar = null;
+    private final Drawable defaultContactAvatar;
     private final boolean convertNCR;
     private final boolean showEmoticons;
     private final boolean useGridLayout;
@@ -92,45 +59,24 @@ public class ConversationAdapter extends ResourceCursorAdapter {
 
         View vRead;
     }
-
-    /**
-     * Handle queries in background.
-     *
-     * @author flx
-     */
+    @SuppressLint("HandlerLeak")
     private final class BackgroundQueryHandler extends AsyncQueryHandler {
 
-        /**
-         * A helper class to help make handling asynchronous {@link ContentResolver} queries
-         * easier.
-         *
-         * @param contentResolver {@link ContentResolver}
-         */
+
         public BackgroundQueryHandler(final ContentResolver contentResolver) {
             super(contentResolver);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         protected void onQueryComplete(final int token, final Object cookie, final Cursor cursor) {
-            switch (token) {
-                case MESSAGE_LIST_QUERY_TOKEN:
-                    ConversationAdapter.this.changeCursor(cursor);
-                    ConversationAdapter.this.activity
-                            .setProgressBarIndeterminateVisibility(Boolean.FALSE);
-                    return;
-                default:
+            if (token == MESSAGE_LIST_QUERY_TOKEN) {
+                ConversationAdapter.this.changeCursor(cursor);
+                ConversationAdapter.this.activity
+                        .setProgressBarIndeterminateVisibility(Boolean.FALSE);
             }
         }
     }
 
-    /**
-     * Default Constructor.
-     *
-     * @param c {@link ConversationListActivity}
-     */
     public ConversationAdapter(final Activity c) {
         super(c, R.layout.conversationlist_item, null, true);
         activity = c;
@@ -142,8 +88,6 @@ public class ConversationAdapter extends ResourceCursorAdapter {
         }
         final ContentResolver cr = c.getContentResolver();
         queryHandler = new BackgroundQueryHandler(cr);
-        blacklist = SpamDB.getBlacklist(c);
-
         defaultContactAvatar = c.getResources().getDrawable(R.drawable.ic_contact_picture);
 
         convertNCR = PreferencesActivity.decodeDecimalNCR(c);
@@ -196,11 +140,11 @@ public class ConversationAdapter extends ResourceCursorAdapter {
         ViewHolder holder = (ViewHolder) view.getTag();
         if (holder == null) {
             holder = new ViewHolder();
-            holder.tvPerson = (TextView) view.findViewById(R.id.addr);
-            holder.tvCount = (TextView) view.findViewById(R.id.count);
-            holder.tvBody = (TextView) view.findViewById(R.id.body);
-            holder.tvDate = (TextView) view.findViewById(R.id.date);
-            holder.ivPhoto = (ImageView) view.findViewById(R.id.photo);
+            holder.tvPerson = view.findViewById(R.id.addr);
+            holder.tvCount = view.findViewById(R.id.count);
+            holder.tvBody = view.findViewById(R.id.body);
+            holder.tvDate = view.findViewById(R.id.date);
+            holder.ivPhoto = view.findViewById(R.id.photo);
             holder.vRead = view.findViewById(R.id.read);
             view.setTag(holder);
         }
@@ -255,9 +199,6 @@ public class ConversationAdapter extends ResourceCursorAdapter {
         if (convertNCR) {
             text = Converter.convertDecNCR2Char(text);
         }
-        if (showEmoticons) {
-            text = SmileyParser.getInstance(context).addSmileySpans(text);
-        }
         holder.tvBody.setText(text);
 
         // date
@@ -265,7 +206,7 @@ public class ConversationAdapter extends ResourceCursorAdapter {
         holder.tvDate.setText(ConversationListActivity.getDate(context, time));
 
         // presence
-        ImageView ivPresence = (ImageView) view.findViewById(R.id.presence);
+        ImageView ivPresence = view.findViewById(R.id.presence);
         if (contact.getPresenceState() > 0) {
             ivPresence.setImageResource(Contact.getPresenceRes(contact.getPresenceState()));
             ivPresence.setVisibility(View.VISIBLE);

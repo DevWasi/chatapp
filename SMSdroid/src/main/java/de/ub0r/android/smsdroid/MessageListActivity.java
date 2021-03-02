@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,7 +45,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -57,6 +55,8 @@ import de.ub0r.android.lib.apis.Contact;
 import de.ub0r.android.lib.apis.ContactsWrapper;
 import de.ub0r.android.logg0r.Log;
 
+import java.util.Objects;
+
 public class MessageListActivity extends AppCompatActivity implements OnItemClickListener,
         OnItemLongClickListener, OnClickListener, OnLongClickListener {
 
@@ -64,19 +64,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
 
     private static final ContactsWrapper WRAPPER = ContactsWrapper.getInstance();
 
-    private static final int WHICH_N = 8;
-
-    private static final int WHICH_MARK_UNREAD = 2;
-
-    private static final int WHICH_REPLY = 3;
-
-    private static final int WHICH_FORWARD = 4;
-
-    private static final int WHICH_COPY_TEXT = 5;
-
-    private static final int WHICH_VIEW_DETAILS = 6;
-
-    private static final int WHICH_DELETE = 7;
 
     private static final int MAX_EDITTEXT_LINES = 10;
 
@@ -88,10 +75,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
 
     static final String URI = "content://mms-sms/conversations/";
 
-    private final String[] longItemClickDialog = new String[WHICH_N];
-
-    private boolean markedUnread = false;
-
     private EditText etText;
     @SuppressWarnings("deprecation")
     private ClipboardManager cbmgr;
@@ -102,14 +85,12 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
 
     private boolean showPhoto = false;
 
-    private Drawable defaultContactAvatar = null;
-
     private MenuItem contactItem = null;
 
     private boolean needContactUpdate = false;
 
     private ListView getListView() {
-        return (ListView) findViewById(android.R.id.list);
+        return findViewById(android.R.id.list);
     }
 
     private void setListAdapter(final ListAdapter la) {
@@ -129,19 +110,15 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         setTheme(PreferencesActivity.getTheme(this));
         Utils.setLocale(this);
         setContentView(R.layout.messagelist);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         Log.d(TAG, "onCreate()");
 
-        if (showPhoto) {
-            defaultContactAvatar = getResources().getDrawable(
-                    R.drawable.ic_contact_picture);
-        }
         if (hideSend) {
             findViewById(R.id.send_).setVisibility(View.GONE);
         }
 
         cbmgr = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        etText = (EditText) findViewById(R.id.text);
+        etText = findViewById(R.id.text);
         int flags = etText.getInputType();
         if (p.getBoolean(PreferencesActivity.PREFS_EDIT_SHORT_TEXT, true)) {
             flags |= InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE;
@@ -152,31 +129,17 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
 
         if (!showTextField) {
             findViewById(R.id.text_layout).setVisibility(View.GONE);
+            parseIntent(getIntent());
+        } else {
+            parseIntent(getIntent());
         }
-
-        parseIntent(getIntent());
 
         final ListView list = getListView();
         list.setOnItemLongClickListener(this);
         list.setOnItemClickListener(this);
         View v = findViewById(R.id.send_);
         v.setOnClickListener(this);
-        v.setOnLongClickListener(this);
-        findViewById(R.id.text_paste).setOnClickListener(this);
-        /* TextWatcher updating char count on writing. */
-        MyTextWatcher textWatcher = new MyTextWatcher(this,
-                (TextView) findViewById(R.id.text_paste),
-                (TextView) findViewById(R.id.text_));
-        etText.addTextChangedListener(textWatcher);
         etText.setMaxLines(MAX_EDITTEXT_LINES);
-        textWatcher.afterTextChanged(etText.getEditableText());
-
-        longItemClickDialog[WHICH_MARK_UNREAD] = getString(R.string.mark_unread_);
-        longItemClickDialog[WHICH_REPLY] = getString(R.string.reply);
-        longItemClickDialog[WHICH_FORWARD] = getString(R.string.forward_);
-        longItemClickDialog[WHICH_COPY_TEXT] = getString(R.string.copy_text_);
-        longItemClickDialog[WHICH_VIEW_DETAILS] = getString(R.string.view_details_);
-        longItemClickDialog[WHICH_DELETE] = getString(R.string.delete_message_);
     }
 
     @Override
@@ -218,7 +181,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
 
         conv = getConversation();
         if (conv == null) {
-            // failed fetching converstion
             finish();
             return;
         }
@@ -234,7 +196,7 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         Log.d(TAG, "address: ", contact.getNumber());
         Log.d(TAG, "name: ", contact.getName());
         Log.d(TAG, "displayName: ", contact.getDisplayName());
-        Log.d(TAG, "showKeyboard: ", showKeyboard);
+        final int d = Log.d(TAG, "showKeyboard: ", showKeyboard);
 
         final ListView lv = getListView();
         lv.setStackFromBottom(true);
@@ -259,10 +221,9 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         String displayName = contact.getDisplayName();
         setTitle(displayName);
         String number = contact.getNumber();
-        if (displayName.equals(number)) {
-            getSupportActionBar().setSubtitle(null);
-        } else {
-            getSupportActionBar().setSubtitle(number);
+        if (displayName.equals(number)) Objects.requireNonNull(getSupportActionBar()).setSubtitle(null);
+        else {
+            Objects.requireNonNull(getSupportActionBar()).setSubtitle(number);
         }
 
         setContactIcon(contact);
@@ -284,9 +245,7 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
             return null;
         }
         try {
-            Conversation c = Conversation.getConversation(this, threadId, true);
-            threadId = c.getThreadId(); // force a NPE :x
-            return c;
+            return Conversation.getConversation(this, threadId, true);
         } catch (NullPointerException e) {
             Log.e(TAG, "Fetched null conversation for thread ", threadId, e);
             Toast.makeText(this, R.string.error_conv_null, Toast.LENGTH_LONG).show();
@@ -296,13 +255,13 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private ImageView findMenuItemView(final int viewId) {
-        ImageView view = (ImageView) findViewById(viewId);
+        ImageView view = findViewById(viewId);
         if (view != null) {
             return view;
         }
 
         if (contactItem != null) {
-            return (ImageView) contactItem.getActionView().findViewById(viewId);
+            return contactItem.getActionView().findViewById(viewId);
         }
         return null;
     }
@@ -332,7 +291,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
             if (ivPhoto == null) {
                 Log.w(TAG, "ivPhoto == null");
             } else {
-                ivPhoto.setImageDrawable(contact.getAvatar(this, defaultContactAvatar));
                 ivPhoto.setOnClickListener(WRAPPER.getQuickContact(this, ivPhoto,
                         contact.getLookUpUri(getContentResolver()), 2, null));
             }
@@ -362,9 +320,8 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         final ListView lv = getListView();
         lv.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
         lv.setAdapter(new MessageAdapter(this, uri));
-        markedUnread = false;
 
-        final Button btn = (Button) findViewById(R.id.send_);
+        final Button btn = findViewById(R.id.send_);
         if (showTextField) {
             Intent i;
             ActivityInfo ai = null;
@@ -459,17 +416,14 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
     }
 
     public final boolean onLongClick(final View v) {
-        switch (v.getId()) {
-            case R.id.send_:
-                send(false, true);
-                return true;
-            default:
-                return true;
+        if (v.getId() == R.id.send_) {
+            send(false, true);
+            return true;
         }
+        return true;
     }
 
     private Intent buildIntent(final boolean autosend, final boolean showChooser) {
-        //noinspection ConstantConditions
         if (conv == null || conv.getContact() == null) {
             Log.e(TAG, "buildIntent() without contact: ", conv);
             throw new NullPointerException("conv and conv.getContact() must be not null");
@@ -494,7 +448,6 @@ public class MessageListActivity extends AppCompatActivity implements OnItemClic
         try {
             final Intent i = buildIntent(autosend, showChooser);
             startActivity(i);
-            //noinspection ConstantConditions
             PreferenceManager
                     .getDefaultSharedPreferences(this)
                     .edit()
